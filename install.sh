@@ -53,9 +53,10 @@ download() {
 }
 
 verify_checksum() {
-  local archive="$1" sums="$2" expected actual
-  expected=$(awk -v f="$archive" '$2==f {print $1}' "$sums")
-  [ -n "$expected" ] || { warn "no checksum entry for $archive, skipping verification"; return 0; }
+  local archive="$1" sums="$2" name expected actual
+  name=$(basename "$archive")
+  expected=$(awk -v f="$name" '$2==f {print $1}' "$sums")
+  [ -n "$expected" ] || { warn "no checksum entry for $name, skipping verification"; return 0; }
 
   if command -v sha256sum >/dev/null 2>&1; then
     actual=$(sha256sum "$archive" | awk '{print $1}')
@@ -69,10 +70,14 @@ verify_checksum() {
   [ "$expected" = "$actual" ] || err "checksum mismatch: expected $expected, got $actual"
 }
 
+tmp=""
+cleanup() { [ -n "${tmp:-}" ] && [ -d "${tmp:-}" ] && rm -rf "$tmp"; return 0; }
+trap cleanup EXIT
+
 main() {
   command -v tar >/dev/null 2>&1 || err "tar is required"
 
-  local os arch ext archive base_url archive_url sums_url tmp bin
+  local os arch ext archive base_url archive_url sums_url bin
   os=$(detect_os)
   arch=$(detect_arch)
   ext="tar.gz"
@@ -100,7 +105,6 @@ main() {
   mkdir -p "$BIN_DIR"
 
   tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
 
   info "detected ${os}/${arch}, version ${VERSION}"
   info "downloading ${archive_url}"
