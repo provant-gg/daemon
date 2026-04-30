@@ -23,6 +23,9 @@ jobs:
           go-version: stable
           cache: true
 
+      - name: Install NSIS (for Windows installer)
+        run: sudo apt-get update && sudo apt-get install -y nsis
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:

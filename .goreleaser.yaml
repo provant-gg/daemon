@@ -20,7 +20,6 @@ builds:
       - linux
       - windows
       - darwin
-      - freebsd
     goarch:
       - amd64
       - arm64
@@ -38,11 +37,11 @@ builds:
       # windows/arm (32-bit) is unused
       - goos: windows
         goarch: arm
-      # freebsd/386 and freebsd/arm aren't worth shipping
-      - goos: freebsd
-        goarch: "386"
-      - goos: freebsd
-        goarch: arm
+    # Build the Windows installer right after the windows/amd64 binary
+    # is produced. The script no-ops for every other target.
+    hooks:
+      post:
+        - cmd: ./windows/build-installer.sh "{{ .Os }}" "{{ .Arch }}" "{{ .Path }}" "{{ .Version }}" "{{ .ProjectName }}"
 
 archives:
   - formats: [tar.gz]
@@ -79,6 +78,9 @@ changelog:
 release:
   draft: false
   prerelease: auto
+  # Attach the NSIS-built Windows installer alongside the archives.
+  extra_files:
+    - glob: ./dist/*_setup.exe
   footer: >-
 
     ---
