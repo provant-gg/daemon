@@ -3,6 +3,7 @@ package selfupdate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"provantgg-daemon/internal/selfupdate/downloader"
 	"runtime"
 
@@ -60,7 +61,11 @@ func (su *SelfUpdater) ApplyUpdate(release *Release) error {
 		return err
 	}
 
-	tmpFile, err := os.CreateTemp(os.TempDir(), "daemon-update-*.tmp")
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	tmpFile, err := os.CreateTemp(filepath.Dir(self), "daemon-update-*.tmp")
 	if err != nil {
 		return err
 	}
