@@ -1,4 +1,4 @@
-module rl-stats-daemon
+module provantgg-daemon
 
 go 1.26.1
 

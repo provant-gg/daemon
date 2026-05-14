@@ -10,8 +10,8 @@
 │                ~/saas/rl-tournaments               │                         │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
-❯ can you get the chats from this url?                                          
-  https://claude.ai/share/546f4b24-a651-4fb4-9230-17bd42e36826                  
+❯ can you get the chats from this url?
+  https://claude.ai/share/546f4b24-a651-4fb4-9230-17bd42e36826
 
 ● Fetch(https://claude.ai/share/546f4b24-a651-4fb4-9230-17bd42e36826)
   ⎿  Error: Request failed with status code 403
@@ -68,130 +68,130 @@
 
   Which would you like to do?
 
-❯ <ide_opened_file>The user opened the file                                     
-  /home/noah/saas/rl-tournaments/daemon/Dockerfile in the IDE. This may or may  
-  not be related to the current task.</ide_opened_file>                         
+❯ <ide_opened_file>The user opened the file
+  /home/noah/saas/rl-tournaments/daemon/Dockerfile in the IDE. This may or may
+  not be related to the current task.</ide_opened_file>
 
-❯ lets first entirely read it only:                                             
-                                                                                
-  # Rocket League Tournament Platform — Project Handoff                         
-                                                                                
-  This document is a complete handoff of design and implementation decisions    
-  made                                                                          
-  across a research + prototyping session for an international Rocket League    
-  tournament platform. The goal is for a fresh Claude Code session to pick up   
-  where this left off without re-deriving anything.                             
-                                                                                
-  The codebase produced so far (the `rl-stats-daemon`) is the foundation. The   
-  platform around it — backend orchestrator, attestation, dispute resolution,   
-  etc.                                                                          
-  — has been designed but not yet implemented.                                  
-                                                                                
-  ---                                                                           
-                                                                                
-  ## 1. Product overview                                                        
-                                                                                
-  **What it is:** International tournament software for Rocket League, with     
-  infrastructure designed to extend to other tick-based esports later.          
-                                                                                
-  **What makes it different from start.gg / Battlefy / Toornament:** a local    
-  daemon on each player's machine that reads Rocket League's official Stats API 
-  and streams events to the backend in real time. This unlocks features the     
-  existing platforms can't offer:                                               
-                                                                                
-  - Live scoreboard / overlay data without manual entry                         
-  - Automatic settings verification (correct map, no mutators) before a match   
-  counts                                                                        
-  - Cross-player consensus to detect tampering                                  
-  - Replay-based ground-truth verification for disputes                         
-  - Hard evidence trail for every disputed result                               
-                                                                                
-  **Target users:** Tournament organizers, esports teams, competitive players.  
-                                                                                
-  **Not in scope yet:** Other esports titles. Architecture stays generic but    
-  initial product is RL-only.                                                   
-                                                                                
-  ---                                                                           
-                                                                                
-  ## 2. Critical context (April 28, 2026 changes)                               
-                                                                                
-  Rocket League just shipped Easy Anti-Cheat for all online/private/tournament  
-  matches on PC. This **changes the landscape significantly** and was announced 
-  the day before this design session:                                           
-                                                                                
-  - **BakkesMod is sunsetting** as of April 28, 2026 after ~10 years of active  
-    development. The community-mod path everyone has used to read MMR out of    
-    game memory is dead.                                                        
-  - **Psyonix expanded the Stats API** specifically for tournament organizers   
-  in                                                                            
-    this same release. Native MMR display was added to the game UI. Quote from  
-    the announcement: *"for tournament organizers and creators who've built     
-    broadcasts using overlay plugins like SimpleAOB's, a new StatsAPI feature   
-  is                                                                            
-    included in this update that lets you pull data directly from the game to   
-    customize your broadcasts."*                                                
-  - **EAC blocks DLL injection into RocketLeague.exe**, which is significant    
-  for                                                                           
-    the tampering threat model — it's now a hardware/kernel-level attacker      
-    required to spoof game data, not j                                          
-  ──── (540 lines hidden) ───────────────────────────────────────────────────── 
-   make                                                                         
-                                                                                
-  - **Symfony or Laravel for the API?** Pick one, both work.                    
-  - **Single bracket engine or pluggable formats?** Single elim is fine for v1; 
-    Swiss is harder.                                                            
-  - **Self-hosted NATS or NATS.io managed?** Self-hosted given Kubernetes       
-    experience.                                                                 
-  - **Replay storage: hot storage (S3-compatible) or cold (since they're        
-  tiny)?**                                                                      
-  - **OBS overlay tech: HTML/CSS over SSE, or compiled Electron app?** SSE is   
-    simpler, works today.                                                       
-  - **Pricing model?** Free for organizers, freemium with prize pool fees, B2B  
-    to esports orgs?                                                            
-  - **Anti-cheat partnership with Psyonix?** Worth pursuing eventually for      
-    RLCS-grade tournaments. Probably not engaging at small scale.               
-                                                                                
-  ---                                                                           
-                                                                                
-  ## 12. Pointers to in-conversation artifacts                                  
-                                                                                
-  The conversation that produced this handoff also produced:                    
-                                                                                
-  - Working Go code for the daemon (in `outputs/rl-stats-daemon/`)              
-  - Three Excalidraw diagrams: tournament match flow, daemon FSM, dispute       
-    resolution flow. (Not exportable to file; recreate from this doc if         
-  needed.)                                                                      
-  - Research on gRPC vs WSS performance for the gamer's-machine use case,       
-    concluding WSS+protobuf wins on bandwidth, CPU, memory, and firewall        
-    traversal for a single one-way stream.                                      
-  - Research on identity / OAuth across Steam / Epic / Xbox / PSN / Switch.     
-  - Research on the April 28, 2026 EAC + Stats API update.                      
-                                                                                
-  ---                                                                           
-                                                                                
-  ## 13. Glossary                                                               
-                                                                                
-  - **Stats API**: Rocket League's official local socket that emits match       
-  events                                                                        
-    as NDJSON. Documented at                                                    
-  `https://www.rocketleague.com/en/developer/stats-api`.                        
-  - **EOS**: Epic Online Services. Epic's developer platform for auth and       
-    multiplayer infrastructure.                                                 
-  - **EAC**: Easy Anti-Cheat. Now mandatory for RL on PC as of April 28, 2026.  
-  - **`MatchGuid`**: Unique per-match identifier from Stats API. Online/LAN     
-    matches only.                                                               
-  - **`UpdateState`**: 30 Hz event with full game snapshot. The bandwidth bulk. 
-  - **`Initialized`**: Match-start event with arena, teams, etc. Settings       
-    verification trigger point.                                                 
-  - **`PrimaryId`**: Platform-prefixed player ID, e.g. `"Steam|76561198XXX|0"`. 
-  - **Ballchasing**: Third-party service that parses RL replay files and        
-    exposes per-player MMR + match data via API.                                
-  - **BakkesMod**: Long-running RL community mod, sunsetting April 28, 2026.    
-    Was the standard path for reading MMR until now.                            
-  - **SimpleAOB**: Tournament organizer overlay plugin referenced in Psyonix's  
-    April 28 release notes.                                                     
-  - **RLCS**: Rocket League Championship Series. Psyonix's flagship esports     
-    competition and the de-facto reference for tournament rigour.               
+❯ lets first entirely read it only:
+
+  # Rocket League Tournament Platform — Project Handoff
+
+  This document is a complete handoff of design and implementation decisions
+  made
+  across a research + prototyping session for an international Rocket League
+  tournament platform. The goal is for a fresh Claude Code session to pick up
+  where this left off without re-deriving anything.
+
+  The codebase produced so far (the `provantgg-daemon`) is the foundation. The
+  platform around it — backend orchestrator, attestation, dispute resolution,
+  etc.
+  — has been designed but not yet implemented.
+
+  ---
+
+  ## 1. Product overview
+
+  **What it is:** International tournament software for Rocket League, with
+  infrastructure designed to extend to other tick-based esports later.
+
+  **What makes it different from start.gg / Battlefy / Toornament:** a local
+  daemon on each player's machine that reads Rocket League's official Stats API
+  and streams events to the backend in real time. This unlocks features the
+  existing platforms can't offer:
+
+  - Live scoreboard / overlay data without manual entry
+  - Automatic settings verification (correct map, no mutators) before a match
+  counts
+  - Cross-player consensus to detect tampering
+  - Replay-based ground-truth verification for disputes
+  - Hard evidence trail for every disputed result
+
+  **Target users:** Tournament organizers, esports teams, competitive players.
+
+  **Not in scope yet:** Other esports titles. Architecture stays generic but
+  initial product is RL-only.
+
+  ---
+
+  ## 2. Critical context (April 28, 2026 changes)
+
+  Rocket League just shipped Easy Anti-Cheat for all online/private/tournament
+  matches on PC. This **changes the landscape significantly** and was announced
+  the day before this design session:
+
+  - **BakkesMod is sunsetting** as of April 28, 2026 after ~10 years of active
+    development. The community-mod path everyone has used to read MMR out of
+    game memory is dead.
+  - **Psyonix expanded the Stats API** specifically for tournament organizers
+  in
+    this same release. Native MMR display was added to the game UI. Quote from
+    the announcement: *"for tournament organizers and creators who've built
+    broadcasts using overlay plugins like SimpleAOB's, a new StatsAPI feature
+  is
+    included in this update that lets you pull data directly from the game to
+    customize your broadcasts."*
+  - **EAC blocks DLL injection into RocketLeague.exe**, which is significant
+  for
+    the tampering threat model — it's now a hardware/kernel-level attacker
+    required to spoof game data, not j
+  ──── (540 lines hidden) ─────────────────────────────────────────────────────
+   make
+
+  - **Symfony or Laravel for the API?** Pick one, both work.
+  - **Single bracket engine or pluggable formats?** Single elim is fine for v1;
+    Swiss is harder.
+  - **Self-hosted NATS or NATS.io managed?** Self-hosted given Kubernetes
+    experience.
+  - **Replay storage: hot storage (S3-compatible) or cold (since they're
+  tiny)?**
+  - **OBS overlay tech: HTML/CSS over SSE, or compiled Electron app?** SSE is
+    simpler, works today.
+  - **Pricing model?** Free for organizers, freemium with prize pool fees, B2B
+    to esports orgs?
+  - **Anti-cheat partnership with Psyonix?** Worth pursuing eventually for
+    RLCS-grade tournaments. Probably not engaging at small scale.
+
+  ---
+
+  ## 12. Pointers to in-conversation artifacts
+
+  The conversation that produced this handoff also produced:
+
+  - Working Go code for the daemon (in `outputs/provantgg-daemon/`)
+  - Three Excalidraw diagrams: tournament match flow, daemon FSM, dispute
+    resolution flow. (Not exportable to file; recreate from this doc if
+  needed.)
+  - Research on gRPC vs WSS performance for the gamer's-machine use case,
+    concluding WSS+protobuf wins on bandwidth, CPU, memory, and firewall
+    traversal for a single one-way stream.
+  - Research on identity / OAuth across Steam / Epic / Xbox / PSN / Switch.
+  - Research on the April 28, 2026 EAC + Stats API update.
+
+  ---
+
+  ## 13. Glossary
+
+  - **Stats API**: Rocket League's official local socket that emits match
+  events
+    as NDJSON. Documented at
+  `https://www.rocketleague.com/en/developer/stats-api`.
+  - **EOS**: Epic Online Services. Epic's developer platform for auth and
+    multiplayer infrastructure.
+  - **EAC**: Easy Anti-Cheat. Now mandatory for RL on PC as of April 28, 2026.
+  - **`MatchGuid`**: Unique per-match identifier from Stats API. Online/LAN
+    matches only.
+  - **`UpdateState`**: 30 Hz event with full game snapshot. The bandwidth bulk.
+  - **`Initialized`**: Match-start event with arena, teams, etc. Settings
+    verification trigger point.
+  - **`PrimaryId`**: Platform-prefixed player ID, e.g. `"Steam|76561198XXX|0"`.
+  - **Ballchasing**: Third-party service that parses RL replay files and
+    exposes per-player MMR + match data via API.
+  - **BakkesMod**: Long-running RL community mod, sunsetting April 28, 2026.
+    Was the standard path for reading MMR until now.
+  - **SimpleAOB**: Tournament organizer overlay plugin referenced in Psyonix's
+    April 28 release notes.
+  - **RLCS**: Rocket League Championship Series. Psyonix's flagship esports
+    competition and the de-facto reference for tournament rigour.
 
 ● Read the entire handoff doc. Got it — 13 sections, end-to-end:
 
@@ -220,11 +220,11 @@
 
   What do you want to tackle first?
 
-❯ lets for now only build a single main.go file in ./daemon that listens to all 
-   rocket league events and puts into a sqlite database so we can analyze all   
-  incoming data                                                                 
-                                                                                
-  lets keep it simple since we are going to delete it later anyways             
+❯ lets for now only build a single main.go file in ./daemon that listens to all
+   rocket league events and puts into a sqlite database so we can analyze all
+  incoming data
+
+  lets keep it simple since we are going to delete it later anyways
 
   Read 2 files, listed 1 directory (ctrl+o to expand)
 
@@ -246,7 +246,7 @@
 ● Write(daemon/main.go)
   ⎿  Wrote 128 lines to daemon/main.go
        1 package main
-       2 
+       2
        3 import (
        4        "bufio"
        5        "context"
@@ -260,10 +260,10 @@
 
 ● Need to init the module and pull the dep.
 
-● Bash(cd /home/noah/saas/rl-tournaments/daemon && go mod init rl-stats-daemon
-      && go get modernc.org/sqlite && go build -o /tmp/rl-stats-daemon . && echo
+● Bash(cd /home/noah/saas/rl-tournaments/daemon && go mod init provantgg-daemon
+      && go get modernc.org/sqlite && go build -o /tmp/provantgg-daemon . && echo
        OK && rm -f /…)
-  ⎿  go: creating new go.mod: module rl-stats-daemon
+  ⎿  go: creating new go.mod: module provantgg-daemon
      go: to add module requirements and sums:
         go mod tidy
      … +14 lines (ctrl+o to expand)
@@ -275,7 +275,7 @@
   - Each line goes into a single events table: id, received_at (RFC3339Nano
   UTC), event_name (peeked from JSON, falls back to empty), raw_json (verbatim
   line).
-  - Indexes on event_name and received_at so SELECT event_name, count(*) FROM 
+  - Indexes on event_name and received_at so SELECT event_name, count(*) FROM
   events GROUP BY 1 is instant.
   - Reconnects every 2s if the socket drops (game closes, between matches, etc.)
    — controlled by -reconnect.
@@ -291,13 +291,13 @@
    2 DESC;"
 
   Note: heads-up — RL doesn't run on Linux natively, so this dies immediately on
-   this box. Cross-build for Windows with GOOS=windows GOARCH=amd64 go build -o 
-  rl-stats-daemon.exe . and run it on the gaming machine.
+   this box. Cross-build for Windows with GOOS=windows GOARCH=amd64 go build -o
+  provantgg-daemon.exe . and run it on the gaming machine.
 
-❯ can you create a github workflow file and fix goreleaser to actually make     
-  this work and build for all possibles we can build for.                       
-                                                                                
-  ./daemon is a repository not the root                                         
+❯ can you create a github workflow file and fix goreleaser to actually make
+  this work and build for all possibles we can build for.
+
+  ./daemon is a repository not the root
 
 ● Let me first verify which platforms modernc.org/sqlite actually supports —
   that's the constraint, not Go itself.
@@ -317,7 +317,7 @@
         os="${combo%/*}"; arch="${combo#…)
   ⎿  Interrupted · What should Claude do instead?
 
-❯ that is not necessary for now                                                 
+❯ that is not necessary for now
 
 ● Fair. Sticking with the 11 verified combos.
 
@@ -326,70 +326,70 @@
 ● Write(daemon/.goreleaser.yaml)
   ⎿  Added 41 lines, removed 13 lines
        1 -# This is an example .goreleaser.yml file with some sensible de
-         -faults.                                                        
+         -faults.
        2 -# Make sure to check the documentation at https://goreleaser.co
-         -m                                                              
-       3 -                                                               
-       4 -# The lines below are called `modelines`. See `:help modeline` 
+         -m
+       3 -
+       4 -# The lines below are called `modelines`. See `:help modeline`
        5 -# Feel free to remove those if you don't want/need to use them.
        1  # yaml-language-server: $schema=https://goreleaser.com/static/s
           chema.json
-       7 -# vim: set ts=2 sw=2 tw=0 fo=cnqoj                             
-       2  
+       7 -# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+       2
        3  version: 2
-       4  
-       5 +project_name: rl-stats-daemon                                  
-       6 +                                                               
+       4
+       5 +project_name: provantgg-daemon
+       6 +
        7  before:
        8    hooks:
-      13 -    # You may remove this if you don't use go modules.         
+      13 -    # You may remove this if you don't use go modules.
        9      - go mod tidy
-      15 -    # you may remove this if you don't need go generate        
-      16 -    - go generate ./...                                        
-      10  
+      15 -    # you may remove this if you don't need go generate
+      16 -    - go generate ./...
+      10
       11  builds:
-      19 -  - main: ./...                                                
-      12 +  - id: rl-stats-daemon                                        
-      13 +    main: .                                                    
-      14 +    binary: rl-stats-daemon                                    
+      19 -  - main: ./...
+      12 +  - id: provantgg-daemon
+      13 +    main: .
+      14 +    binary: provantgg-daemon
       15      env:
       16        - CGO_ENABLED=0
-      17 +    ldflags:                                                   
+      17 +    ldflags:
       18 +      - -s -w -X main.version={{.Version}} -X main.commit={{.Co
-         +mmit}} -X main.date={{.Date}}                                  
+         +mmit}} -X main.date={{.Date}}
       19      goos:
       20        - linux
       21        - windows
       22        - darwin
-      23 +      - freebsd                                                
+      23 +      - freebsd
       24      goarch:
-      27 -      - arm64                                                  
+      27 -      - arm64
       25        - amd64
-      26 +      - arm64                                                  
+      26 +      - arm64
       27        - "386"
-      28 +      - arm                                                    
-      29 +    goarm:                                                     
-      30 +      - "6"                                                    
-      31 +      - "7"                                                    
-      32 +    ignore:                                                    
-      33 +      # darwin doesn't ship 32-bit or 32-bit ARM               
-      34 +      - goos: darwin                                           
-      35 +        goarch: "386"                                          
-      36 +      - goos: darwin                                           
-      37 +        goarch: arm                                            
-      38 +      # windows/arm (32-bit) is unused                         
-      39 +      - goos: windows                                          
-      40 +        goarch: arm                                            
-      41 +      # freebsd/386 and freebsd/arm aren't worth shipping      
-      42 +      - goos: freebsd                                          
-      43 +        goarch: "386"                                          
-      44 +      - goos: freebsd                                          
-      45 +        goarch: arm                                            
-      46  
+      28 +      - arm
+      29 +    goarm:
+      30 +      - "6"
+      31 +      - "7"
+      32 +    ignore:
+      33 +      # darwin doesn't ship 32-bit or 32-bit ARM
+      34 +      - goos: darwin
+      35 +        goarch: "386"
+      36 +      - goos: darwin
+      37 +        goarch: arm
+      38 +      # windows/arm (32-bit) is unused
+      39 +      - goos: windows
+      40 +        goarch: arm
+      41 +      # freebsd/386 and freebsd/arm aren't worth shipping
+      42 +      - goos: freebsd
+      43 +        goarch: "386"
+      44 +      - goos: freebsd
+      45 +        goarch: arm
+      46
       47  archives:
       48    - formats: [tar.gz]
-      33 -    # this name template makes the OS and Arch compatible with 
-         -the results of `uname`.                                        
+      33 -    # this name template makes the OS and Arch compatible with
+         -the results of `uname`.
       49      name_template: >-
       50        {{ .ProjectName }}_
       51        {{- title .Os }}_
@@ -397,35 +397,35 @@
       53        {{- else if eq .Arch "386" }}i386
       54        {{- else }}{{ .Arch }}{{ end }}
       55        {{- if .Arm }}v{{ .Arm }}{{ end }}
-      41 -    # use zip for windows archives                             
+      41 -    # use zip for windows archives
       56      format_overrides:
       57        - goos: windows
       58          formats: [zip]
-      59 +    files:                                                     
-      60 +      - LICENSE*                                               
-      61 +      - README*                                                
-      62  
-      63 +checksum:                                                      
-      64 +  name_template: "checksums.txt"                               
-      65 +                                                               
-      66 +snapshot:                                                      
-      67 +  version_template: "{{ incpatch .Version }}-next"             
-      68 +                                                               
+      59 +    files:
+      60 +      - LICENSE*
+      61 +      - README*
+      62
+      63 +checksum:
+      64 +  name_template: "checksums.txt"
+      65 +
+      66 +snapshot:
+      67 +  version_template: "{{ incpatch .Version }}-next"
+      68 +
       69  changelog:
       70    sort: asc
       71    filters:
       72      exclude:
       73        - "^docs:"
       74        - "^test:"
-      75 +      - "^chore:"                                              
-      76 +      - "Merge pull request"                                   
-      77 +      - "Merge branch"                                         
-      78  
+      75 +      - "^chore:"
+      76 +      - "Merge pull request"
+      77 +      - "Merge branch"
+      78
       79  release:
-      80 +  draft: false                                                 
-      81 +  prerelease: auto                                             
+      80 +  draft: false
+      81 +  prerelease: auto
       82    footer: >-
-      83  
+      83
       84      ---
 
 ● Bash(cd /home/noah/saas/rl-tournaments/daemon && mkdir -p .github/workflows &&
@@ -435,12 +435,12 @@
 ● Write(daemon/.github/workflows/release.yml)
   ⎿  Wrote 33 lines to daemon/.github/workflows/release.yml
       1 name: release
-      2 
+      2
       3 on:
       4   push:
       5     tags:
       6       - "v*"
-      7 
+      7
       8 permissions:
       9   contents: write
      … +23 lines (ctrl+o to expand)
@@ -514,17 +514,17 @@
   CI runs goreleaser, builds all 12 archives + checksums, and publishes a GitHub
    release on the daemon repo.
 
-❯ <ide_opened_file>The user opened the file                                     
-  /home/noah/saas/rl-tournaments/daemon/.gitignore in the IDE. This may or may  
-  not be related to the current task.</ide_opened_file>                         
+❯ <ide_opened_file>The user opened the file
+  /home/noah/saas/rl-tournaments/daemon/.gitignore in the IDE. This may or may
+  not be related to the current task.</ide_opened_file>
 
-❯ lets create a install.sh script in ./daemon/install.sh that auto installs the 
-   cli according to the system os and arch                                      
-                                                                                
-  also create a README.md that states a wget or curl (whichever is more default 
-   installed on the different OS) that in 1 command install it.                 
-                                                                                
-  the repo link is https://github.com/provant-gg/daemon                         
+❯ lets create a install.sh script in ./daemon/install.sh that auto installs the
+   cli according to the system os and arch
+
+  also create a README.md that states a wget or curl (whichever is more default
+   installed on the different OS) that in 1 command install it.
+
+  the repo link is https://github.com/provant-gg/daemon
 
 ● I'll write a portable install script that detects OS+arch, fetches from GitHub
    releases, verifies checksums, and installs to /usr/local/bin (or ~/.local/bin
@@ -532,7 +532,7 @@
 
 ● Write(daemon/install.sh)
   ⎿  Wrote 136 lines to daemon/install.sh
-      2 # Install rl-stats-daemon.
+      2 # Install provantgg-daemon.
       3 #
       4 # Usage:
       5 #   curl -fsSL https://raw.githubusercontent.com/provant-gg/daemo
@@ -557,13 +557,13 @@
 
 ● Write(daemon/README.md)
   ⎿  Wrote 74 lines to daemon/README.md
-       2 # rl-stats-daemon
+       2 # provantgg-daemon
        3 Reads Rocket League's local Stats API stream and writes every ev
          ent to a SQLite database for analysis.
-       4 
+       4
        5 ## Install
        7 ### macOS, Linux, FreeBSD
-       8 
+       8
        9 ```sh
       10 curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/m
          ain/install.sh | bash
@@ -580,7 +580,7 @@
      … +3 lines (ctrl+o to expand)
   ⎿  Shell cwd was reset to /home/noah/saas/rl-tournaments
 
-● Detected archive name (rl-stats-daemon_Linux_x86_64.tar.gz) matches what
+● Detected archive name (provantgg-daemon_Linux_x86_64.tar.gz) matches what
   goreleaser produced in the snapshot test earlier. The naming round-trips
   cleanly.
 
@@ -593,7 +593,7 @@
   arm64, i386, armv6, armv7).
   - Picks tar.gz or zip based on OS.
   - Pulls from releases/latest/download/... (or pinned VERSION=).
-  - Fetches checksums.txt, verifies SHA256 with sha256sum (Linux) or shasum -a 
+  - Fetches checksums.txt, verifies SHA256 with sha256sum (Linux) or shasum -a
   256 (macOS).
   - Installs to /usr/local/bin if writable, else ~/.local/bin (BIN_DIR
   overrides).
@@ -617,18 +617,18 @@
   daemon/.github/workflows/release.yml builds the release that the script
   downloads.
 
-❯ <ide_opened_file>The user opened the file                                     
-  /home/noah/saas/rl-tournaments/daemon/install.sh in the IDE. This may or may  
-  not be related to the current task.</ide_opened_file>                         
+❯ <ide_opened_file>The user opened the file
+  /home/noah/saas/rl-tournaments/daemon/install.sh in the IDE. This may or may
+  not be related to the current task.</ide_opened_file>
 
-❯ the default branch is master                                                  
-                                                                                
-  what is the most easiest way to install the daemon on windows if one liner    
-  doesnt work that easily.                                                      
-                                                                                
-  can we maybe create a windows installer setup that is also in the goreleaser? 
-                                                                                
-  no need for one liner for windows then                                        
+❯ the default branch is master
+
+  what is the most easiest way to install the daemon on windows if one liner
+  doesnt work that easily.
+
+  can we maybe create a windows installer setup that is also in the goreleaser?
+
+  no need for one liner for windows then
 
 ● For Windows: easiest UX is an MSI installer that goes in the goreleaser
   pipeline alongside the archives. Let me wire that up via WiX (built on Linux
@@ -687,22 +687,22 @@
   ⎿  Added 10 lines
       54        - LICENSE*
       55        - README*
-      56  
-      57 +# Windows MSI installer. Built with msitools (`wixl`) on Linux 
-         +runner.                                                        
+      56
+      57 +# Windows MSI installer. Built with msitools (`wixl`) on Linux
+         +runner.
       58 +# Produces one .msi per Windows arch (x64, arm64, x86) alongsid
-         +e the .zip.                                                    
-      59 +msi:                                                           
-      60 +  - id: rl-stats-daemon                                        
-      61 +    name: "{{.ProjectName}}_{{.MsiArch}}"                      
-      62 +    wxs: ./windows/installer.wxs                               
-      63 +    replace: false                                             
-      64 +    ids:                                                       
-      65 +      - rl-stats-daemon                                        
-      66 +                                                               
+         +e the .zip.
+      59 +msi:
+      60 +  - id: provantgg-daemon
+      61 +    name: "{{.ProjectName}}_{{.MsiArch}}"
+      62 +    wxs: ./windows/installer.wxs
+      63 +    replace: false
+      64 +    ids:
+      65 +      - provantgg-daemon
+      66 +
       67  checksum:
       68    name_template: "checksums.txt"
-      69  
+      69
 
 ● Bash(cd /home/noah/saas/rl-tournaments/daemon && goreleaser check 2>&1 | tail
       -10)
@@ -726,16 +726,16 @@
   ⎿  (No output)
 ● Write(daemon/windows/installer.nsi)
   ⎿  Wrote 139 lines to daemon/windows/installer.nsi
-       1 ; rl-stats-daemon NSIS installer
+       1 ; provantgg-daemon NSIS installer
        2 ;
        3 ; Build:
        4 ;   makensis \
        5 ;     -DVERSION=1.2.3 \
-       6 ;     -DBINARY=/abs/path/to/rl-stats-daemon.exe \
-       7 ;     -DOUTFILE=/abs/path/to/rl-stats-daemon_setup.exe \
+       6 ;     -DBINARY=/abs/path/to/provantgg-daemon.exe \
+       7 ;     -DOUTFILE=/abs/path/to/provantgg-daemon_setup.exe \
        8 ;     windows/installer.nsi
-       9 
-      10 !define APP_NAME "rl-stats-daemon"
+       9
+      10 !define APP_NAME "provantgg-daemon"
      … +141 lines (ctrl+o to expand)
 
 ● The custom StrContains is buggy. Let me rewrite using NSIS's bundled
@@ -744,101 +744,101 @@
 ● Write(daemon/windows/installer.nsi)
   ⎿  Added 10 lines, removed 52 lines
       41  VIAddVersionKey "LegalCopyright"  "${COMP_NAME}"
-      42  
+      42
       43  !include "MUI2.nsh"
-      44 +!include "StrFunc.nsh"                                         
-      45 +${StrStr}                                                      
-      46  
+      44 +!include "StrFunc.nsh"
+      45 +${StrStr}
+      46
       47  !define MUI_ABORTWARNING
-      48  
+      48
      ...
       61    File /oname=${APP_NAME}.exe "${BINARY}"
       62    WriteUninstaller "$INSTDIR\Uninstall.exe"
-      63  
-      62 -  ; Append INSTDIR to system PATH if not already there.        
-      64 +  ; Append INSTDIR to system PATH (idempotent).                
-      65    ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session 
+      63
+      62 -  ; Append INSTDIR to system PATH if not already there.
+      64 +  ; Append INSTDIR to system PATH (idempotent).
+      65    ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session
           Manager\Environment" "Path"
-      64 -  Push "$0"                                                    
-      65 -  Push "$INSTDIR"                                              
-      66 -  Call StrContains                                             
-      67 -  Pop $1                                                       
-      68 -  StrCmp $1 "1" pathDone 0                                     
-      66 +  ${StrStr} $1 "$0" "$INSTDIR"                                 
-      67 +  StrCmp $1 "" 0 pathDone                                      
+      64 -  Push "$0"
+      65 -  Push "$INSTDIR"
+      66 -  Call StrContains
+      67 -  Pop $1
+      68 -  StrCmp $1 "1" pathDone 0
+      66 +  ${StrStr} $1 "$0" "$INSTDIR"
+      67 +  StrCmp $1 "" 0 pathDone
       68      StrCpy $0 "$0;$INSTDIR"
       69      WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Se
           ssion Manager\Environment" "Path" "$0"
-      71 -    System::Call 'User32::SendMessageTimeout(p 0xffff, i 0x1A, 
-         -p 0, t "Environment", i 0, i 5000, *p .r1)'                    
-      70 +    System::Call 'User32::SendMessageTimeout(p 0xffff, i 0x1A, 
-         +p 0, t "Environment", i 0, i 5000, *p .r2)'                    
+      71 -    System::Call 'User32::SendMessageTimeout(p 0xffff, i 0x1A,
+         -p 0, t "Environment", i 0, i 5000, *p .r1)'
+      70 +    System::Call 'User32::SendMessageTimeout(p 0xffff, i 0x1A,
+         +p 0, t "Environment", i 0, i 5000, *p .r2)'
       71    pathDone:
-      72  
+      72
       73    ; Add/Remove Programs registration.
      ...
        90    DeleteRegKey HKLM "${UNINSTALL_KEY}"
        91    DeleteRegKey HKLM "Software\${APP_NAME}"
-       92  
+       92
        94 -  ; Note: the PATH entry is intentionally not removed on unins
-          -tall.                                                         
+          -tall.
        95 -  ; Removing requires search/replace of a single segment which
-          - is                                                           
+          - is
        96 -  ; brittle without an external plugin; a stale PATH entry poi
-          -nting                                                         
-       97 -  ; at a non-existent directory is harmless.                  
+          -nting
+       97 -  ; at a non-existent directory is harmless.
        93 +  ; PATH entry intentionally not removed on uninstall: a stale
-          + PATH                                                         
+          + PATH
        94 +  ; entry pointing at a non-existent directory is harmless, an
-          +d the                                                         
+          +d the
        95 +  ; search/replace logic to remove a single segment is brittle
-          + without                                                      
-       96 +  ; an external plugin.                                       
+          + without
+       96 +  ; an external plugin.
        97  SectionEnd
-       99 -                                                              
+       99 -
       100 -; ------------------------------------------------------------
-          -----------------                                              
-      101 -; Helpers                                                     
+          -----------------
+      101 -; Helpers
       102 -; ------------------------------------------------------------
-          -----------------                                              
-      103 -                                                              
+          -----------------
+      103 -
       104 -; StrContains: returns "1" if needle is in haystack, "" otherw
-          -ise.                                                          
-      105 -;   Push haystack                                             
-      106 -;   Push needle                                               
-      107 -;   Call StrContains                                          
-      108 -;   Pop $result                                               
-      109 -Function StrContains                                          
-      110 -  Exch $R1 ; needle                                           
-      111 -  Exch                                                        
-      112 -  Exch $R2 ; haystack                                         
-      113 -  Push $R3                                                    
-      114 -  Push $R4                                                    
-      115 -  Push $R5                                                    
-      116 -  StrLen $R3 $R1                                              
-      117 -  StrCpy $R4 0                                                
-      118 -  loop:                                                       
-      119 -    StrCpy $R5 $R2 $R3 $R4                                    
-      120 -    StrCmp $R5 $R1 found                                      
-      121 -    StrCmp $R5 "" notfound                                    
-      122 -    IntOp $R4 $R4 + 1                                         
-      123 -    Goto loop                                                 
-      124 -  found:                                                      
-      125 -    StrCpy $R5 "1"                                            
-      126 -    Goto done                                                 
-      127 -  notfound:                                                   
-      128 -    StrCpy $R5 ""                                             
-      129 -  done:                                                       
-      130 -    Pop $R4 ; (intermediate, discard)                         
-      131 -    Pop $R4                                                   
-      132 -    Pop $R3                                                   
-      133 -    Exch $R5                                                  
-      134 -    Exch                                                      
-      135 -    Pop $R2                                                   
-      136 -    Exch $R1                                                  
-      137 -    Pop $R1                                                   
-      138 -    Push $R5                                                  
-      139 -FunctionEnd                                                   
+          -ise.
+      105 -;   Push haystack
+      106 -;   Push needle
+      107 -;   Call StrContains
+      108 -;   Pop $result
+      109 -Function StrContains
+      110 -  Exch $R1 ; needle
+      111 -  Exch
+      112 -  Exch $R2 ; haystack
+      113 -  Push $R3
+      114 -  Push $R4
+      115 -  Push $R5
+      116 -  StrLen $R3 $R1
+      117 -  StrCpy $R4 0
+      118 -  loop:
+      119 -    StrCpy $R5 $R2 $R3 $R4
+      120 -    StrCmp $R5 $R1 found
+      121 -    StrCmp $R5 "" notfound
+      122 -    IntOp $R4 $R4 + 1
+      123 -    Goto loop
+      124 -  found:
+      125 -    StrCpy $R5 "1"
+      126 -    Goto done
+      127 -  notfound:
+      128 -    StrCpy $R5 ""
+      129 -  done:
+      130 -    Pop $R4 ; (intermediate, discard)
+      131 -    Pop $R4
+      132 -    Pop $R3
+      133 -    Exch $R5
+      134 -    Exch
+      135 -    Pop $R2
+      136 -    Exch $R1
+      137 -    Pop $R1
+      138 -    Push $R5
+      139 -FunctionEnd
 
 ● Now the small shim that the goreleaser build hook will call (only fires NSIS
   for windows/amd64; no-op for everything else):
@@ -852,7 +852,7 @@
        4 #
        6 # Args: GOOS GOARCH BINARY_PATH VERSION PROJECT_NAME
        7 set -euo pipefail
-       8 
+       8
        9 goos="${1:?missing goos}"
       10 goarch="${2:?missing goarch}"
      … +26 lines (ctrl+o to expand)
@@ -874,13 +874,13 @@
       38        - goos: windows
       39          goarch: arm
       40 +    # Build the Windows installer right after the windows/amd64
-         + binary                                                        
-      41 +    # is produced. The script no-ops for every other target.   
-      42 +    hooks:                                                     
-      43 +      post:                                                    
+         + binary
+      41 +    # is produced. The script no-ops for every other target.
+      42 +    hooks:
+      43 +      post:
       44 +        - cmd: ./windows/build-installer.sh "{{ .Os }}" "{{ .Ar
-         +ch }}" "{{ .Path }}" "{{ .Version }}" "{{ .ProjectName }}"     
-      45  
+         +ch }}" "{{ .Path }}" "{{ .Version }}" "{{ .ProjectName }}"
+      45
       46  archives:
       47    - formats: [tar.gz]
 
@@ -888,22 +888,22 @@
   ⎿  Removed 10 lines
       59        - LICENSE*
       60        - README*
-      61  
-      62 -# Windows MSI installer. Built with msitools (`wixl`) on Linux 
-         -runner.                                                        
+      61
+      62 -# Windows MSI installer. Built with msitools (`wixl`) on Linux
+         -runner.
       63 -# Produces one .msi per Windows arch (x64, arm64, x86) alongsid
-         -e the .zip.                                                    
-      64 -msi:                                                           
-      65 -  - id: rl-stats-daemon                                        
-      66 -    name: "{{.ProjectName}}_{{.MsiArch}}"                      
-      67 -    wxs: ./windows/installer.wxs                               
-      68 -    replace: false                                             
-      69 -    ids:                                                       
-      70 -      - rl-stats-daemon                                        
-      71 -                                                               
+         -e the .zip.
+      64 -msi:
+      65 -  - id: provantgg-daemon
+      66 -    name: "{{.ProjectName}}_{{.MsiArch}}"
+      67 -    wxs: ./windows/installer.wxs
+      68 -    replace: false
+      69 -    ids:
+      70 -      - provantgg-daemon
+      71 -
       62  checksum:
       63    name_template: "checksums.txt"
-      64  
+      64
 
 ● Update(daemon/.goreleaser.yaml)
   ⎿  Added 3 lines
@@ -911,11 +911,11 @@
       79    draft: false
       80    prerelease: auto
       81 +  # Attach the NSIS-built Windows installer alongside the archi
-         +ves.                                                           
-      82 +  extra_files:                                                 
-      83 +    - glob: ./dist/*_setup.exe                                 
+         +ves.
+      82 +  extra_files:
+      83 +    - glob: ./dist/*_setup.exe
       84    footer: >-
-      85  
+      85
       86      ---
 
 ● Bash(goreleaser check 2>&1 | tail -10)
@@ -932,11 +932,11 @@
   ⎿  Added 3 lines
       23            go-version: stable
       24            cache: true
-      25  
-      26 +      - name: Install NSIS (for Windows installer)             
+      25
+      26 +      - name: Install NSIS (for Windows installer)
       27 +        run: sudo apt-get update && sudo apt-get install -y nsi
-         +s                                                              
-      28 +                                                               
+         +s
+      28 +
       29        - name: Run GoReleaser
       30          uses: goreleaser/goreleaser-action@v6
       31          with:
@@ -974,65 +974,65 @@
 ● Update(daemon/README.md)
   ⎿  Added 3 lines, removed 3 lines
        7  ### macOS, Linux, FreeBSD
-       8  
+       8
        9  ```sh
       10 -curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         -main/install.sh | bash                                         
+         -main/install.sh | bash
       10 +curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         +master/install.sh | bash                                       
+         +master/install.sh | bash
       11  ```
-      12  
-      13  The installer auto-detects your OS and architecture, downloads 
+      12
+      13  The installer auto-detects your OS and architecture, downloads
           the matching release, verifies the checksum, and drops the bina
           ry into `/usr/local/bin` (or `~/.local/bin` if `/usr/local/bin`
            isn't writable).
      ...
-      16  
+      16
       17  ```sh
       18  # Pin to a specific version
       19 -curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         -main/install.sh | VERSION=v0.1.0 bash                          
+         -main/install.sh | VERSION=v0.1.0 bash
       19 +curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         +master/install.sh | VERSION=v0.1.0 bash                        
-      20  
+         +master/install.sh | VERSION=v0.1.0 bash
+      20
       21  # Custom install location
       22 -curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         -main/install.sh | BIN_DIR=$HOME/bin bash                       
+         -main/install.sh | BIN_DIR=$HOME/bin bash
       22 +curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
-         +master/install.sh | BIN_DIR=$HOME/bin bash                     
+         +master/install.sh | BIN_DIR=$HOME/bin bash
       23  ```
-      24  
+      24
       25  ### Windows
 ● Update(daemon/README.md)
   ⎿  Added 6 lines, removed 2 lines
       22  curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/
           master/install.sh | BIN_DIR=$HOME/bin bash
       23  ```
-      24  
-      25 -### Windows                                                    
-      25 +### Windows (x64)                                              
-      26  
-      27 -Download the latest `rl-stats-daemon_Windows_x86_64.zip` (or `a
+      24
+      25 -### Windows
+      25 +### Windows (x64)
+      26
+      27 -Download the latest `provantgg-daemon_Windows_x86_64.zip` (or `a
          -rm64` / `i386`) from the [releases page](https://github.com/pro
-         -vant-gg/daemon/releases/latest), extract `rl-stats-daemon.exe`,
-         - and put it somewhere on your `PATH`.                          
-      27 +Download `rl-stats-daemon_Windows_x86_64_setup.exe` from the [l
+         -vant-gg/daemon/releases/latest), extract `provantgg-daemon.exe`,
+         - and put it somewhere on your `PATH`.
+      27 +Download `provantgg-daemon_Windows_x86_64_setup.exe` from the [l
          +atest release](https://github.com/provant-gg/daemon/releases/la
          +test) and double-click it. The installer copies `rl-stats-daemo
-         +n.exe` to `C:\Program Files\rl-stats-daemon\`, adds it to the s
+         +n.exe` to `C:\Program Files\provantgg-daemon\`, adds it to the s
          +ystem `PATH`, and registers an uninstaller in **Add or Remove P
          +rograms**. Open a new terminal afterwards so the updated `PATH`
-         + takes effect.                                                 
-      28  
-      29 +### Windows (ARM64 or x86)                                     
-      30 +                                                               
-      31 +Grab the matching `rl-stats-daemon_Windows_<arch>.zip` from the
+         + takes effect.
+      28
+      29 +### Windows (ARM64 or x86)
+      30 +
+      31 +Grab the matching `provantgg-daemon_Windows_<arch>.zip` from the
          + [releases page](https://github.com/provant-gg/daemon/releases/
-         +latest), extract `rl-stats-daemon.exe`, and put it somewhere on
-         + your `PATH`. (No installer is built for these architectures.) 
-      32 +                                                               
+         +latest), extract `provantgg-daemon.exe`, and put it somewhere on
+         + your `PATH`. (No installer is built for these architectures.)
+      32 +
       33  ## Usage
-      34  
+      34
       35  Make sure Rocket League is running with the Stats API enabled (
           default in recent builds — port `49123`), then:
 
@@ -1053,7 +1053,7 @@
   script for every binary, plus release.extra_files to attach the resulting
   _setup.exe to the GitHub release.
   - daemon/windows/installer.nsi — NSIS script: standard MUI2 wizard, installs
-  to C:\Program Files\rl-stats-daemon\, idempotent system-PATH append (uses
+  to C:\Program Files\provantgg-daemon\, idempotent system-PATH append (uses
   bundled StrFunc.nsh), registers an uninstaller in Add/Remove Programs.
   - daemon/windows/build-installer.sh — shim that goreleaser calls; only fires
   makensis for windows/amd64, no-ops otherwise (and gracefully skips if makensis
@@ -1061,7 +1061,7 @@
   - daemon/.github/workflows/release.yml — adds sudo apt-get install -y nsis
   before the goreleaser step.
   - daemon/README.md — main→master fixed; Windows section now points to
-  rl-stats-daemon_Windows_x86_64_setup.exe for x64, with a fallback note for
+  provantgg-daemon_Windows_x86_64_setup.exe for x64, with a fallback note for
   ARM64/x86 users.
 
   Verified locally:

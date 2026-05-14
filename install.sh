@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install rl-stats-daemon.
+# Install provantgg-daemon.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/main/install.sh | bash
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 REPO="provant-gg/daemon"
-PROJECT="rl-stats-daemon"
+PROJECT="provantgg-daemon"
 VERSION="${VERSION:-latest}"
 BIN_DIR="${BIN_DIR:-}"
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"rl-stats-daemon/internal/selfupdate"
-	"rl-stats-daemon/internal/selfupdate/downloader"
+	"provantgg-daemon/internal/selfupdate"
+	"provantgg-daemon/internal/selfupdate/downloader"
 )
 
 var (

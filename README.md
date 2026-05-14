@@ -1,4 +1,4 @@
-# rl-stats-daemon
+# provantgg-daemon
 
 Reads Rocket League's local Stats API stream and writes every event to a SQLite database for analysis.
 
@@ -24,18 +24,18 @@ curl -fsSL https://raw.githubusercontent.com/provant-gg/daemon/master/install.sh
 
 ### Windows (x64)
 
-Download `rl-stats-daemon_Windows_x86_64_setup.exe` from the [latest release](https://github.com/provant-gg/daemon/releases/latest) and double-click it. The installer copies `rl-stats-daemon.exe` to `C:\Program Files\rl-stats-daemon\`, adds it to the system `PATH`, and registers an uninstaller in **Add or Remove Programs**. Open a new terminal afterwards so the updated `PATH` takes effect.
+Download `provantgg-daemon_Windows_x86_64_setup.exe` from the [latest release](https://github.com/provant-gg/daemon/releases/latest) and double-click it. The installer copies `provantgg-daemon.exe` to `C:\Program Files\provantgg-daemon\`, adds it to the system `PATH`, and registers an uninstaller in **Add or Remove Programs**. Open a new terminal afterwards so the updated `PATH` takes effect.
 
 ### Windows (ARM64 or x86)
 
-Grab the matching `rl-stats-daemon_Windows_<arch>.zip` from the [releases page](https://github.com/provant-gg/daemon/releases/latest), extract `rl-stats-daemon.exe`, and put it somewhere on your `PATH`. (No installer is built for these architectures.)
+Grab the matching `provantgg-daemon_Windows_<arch>.zip` from the [releases page](https://github.com/provant-gg/daemon/releases/latest), extract `provantgg-daemon.exe`, and put it somewhere on your `PATH`. (No installer is built for these architectures.)
 
 ## Usage
 
 Make sure Rocket League is running with the Stats API enabled (default in recent builds — port `49123`), then:
 
 ```sh
-rl-stats-daemon -db events.db
+provantgg-daemon -db events.db
 ```
 
 Flags:
@@ -74,5 +74,5 @@ Requires Go 1.22+.
 ```sh
 git clone https://github.com/provant-gg/daemon.git
 cd daemon
-go build -o rl-stats-daemon .
+go build -o provantgg-daemon .
 ```
