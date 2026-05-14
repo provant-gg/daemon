@@ -3,7 +3,7 @@ package selfupdate
 import (
 	"fmt"
 	"os"
-	"rl-stats-daemon/internal/selfupdate/downloader"
+	"provantgg-daemon/internal/selfupdate/downloader"
 	"runtime"
 
 	"golang.org/x/mod/semver"

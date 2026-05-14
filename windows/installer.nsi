@@ -1,13 +1,13 @@
-; rl-stats-daemon NSIS installer
+; provantgg-daemon NSIS installer
 ;
 ; Build:
 ;   makensis \
 ;     -DVERSION=1.2.3 \
-;     -DBINARY=/abs/path/to/rl-stats-daemon.exe \
-;     -DOUTFILE=/abs/path/to/rl-stats-daemon_setup.exe \
+;     -DBINARY=/abs/path/to/provantgg-daemon.exe \
+;     -DOUTFILE=/abs/path/to/provantgg-daemon_setup.exe \
 ;     windows/installer.nsi
 
-!define APP_NAME "rl-stats-daemon"
+!define APP_NAME "provantgg-daemon"
 !define COMP_NAME "provant.gg"
 !define WEB_SITE  "https://github.com/provant-gg/daemon"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
@@ -16,7 +16,7 @@
   !define VERSION "0.0.0"
 !endif
 !ifndef BINARY
-  !error "BINARY must be defined: -DBINARY=path/to/rl-stats-daemon.exe"
+  !error "BINARY must be defined: -DBINARY=path/to/provantgg-daemon.exe"
 !endif
 !ifndef OUTFILE
   !define OUTFILE "${APP_NAME}_setup.exe"
