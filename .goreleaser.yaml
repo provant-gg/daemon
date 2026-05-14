@@ -2,16 +2,16 @@
 
 version: 2
 
-project_name: rl-stats-daemon
+project_name: provantgg-daemon
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: rl-stats-daemon
-    main: .
-    binary: rl-stats-daemon
+  - id: provantgg-daemon
+    main: ./cmd/daemon
+    binary: provantgg-daemon
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -81,8 +81,3 @@ release:
   # Attach the NSIS-built Windows installer alongside the archives.
   extra_files:
     - glob: ./dist/*_setup.exe
-  footer: >-
-
-    ---
-
-    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
